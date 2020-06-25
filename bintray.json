@@ -1,0 +1,27 @@
+{
+  "package": {
+    "name": "package",
+    "repo": "otus_cpp",
+    "subject": "vshishov"
+  },
+
+  "version": {
+    "name": "bayan",
+    "gpgSign": false
+  },
+
+  "files": [
+    {
+      "includePattern": "\./(.*\.deb)",
+      "uploadPattern": "$1",
+      "matrixParams": {
+        "deb_distribution": "bionic",
+        "deb_component": "main",
+        "deb_architecture": "amd64",
+        "override": true
+      }
+    }
+  ],
+
+  "publish": true
+}

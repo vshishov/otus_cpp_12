@@ -1,0 +1,36 @@
+language: cpp
+dist: bionic
+
+addons:
+  apt:
+    update: false
+    packages:
+    - libboost-program-options-dev
+    - libboost-filesystem-dev
+    - libboost-regex-dev
+    - libgtest-dev
+    - doxygen
+    - graphviz
+
+script:
+- cmake .
+- cmake --build .
+- cmake --build . --target test
+- cmake --build . --target package
+- cmake --build . --target html
+
+deploy:
+  - provider: bintray
+    file: bintray.json
+    user: $BINTRAY_USER
+    key: $BINTRAY_API_KEY
+    cleanup: false
+    edge: true
+
+  - provider: pages
+    skip_cleanup: true
+    github_token: $GITHUB_TOKEN
+    keep_history: false
+    local_dir: html
+    on:
+      branch: master
