@@ -1,100 +1,32 @@
-#include "session.h"
+#include "server.h"
 
-#include <iostream>
-#include <memory>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
+namespace otus {
 
-using boost::asio::ip::tcp;
-
-class Session : public std::enable_shared_from_this<Session>
+Server::Server(boost::asio::io_service& ios, short port) 
+  : ios(ios)
+  , acceptor(ios, tcp::endpoint(tcp::v4(), port))
 {
-public:
-  Session(boost::asio::io_service& ios)
-    : socket(ios) {}
-  
-  tcp::socket& get_socket()
-  {
-    return socket;
-  }
+  std::shared_ptr<Session> session = std::make_shared<Session>(ios);
+  acceptor.async_accept(session->get_socket(),
+                        boost::bind(&Server::handle_accept, this,
+                                    session,
+                                    boost::asio::placeholders::error));
+}
 
-  void start()
-  {
-    socket.async_read_some(
-        boost::asio::buffer(data, max_length),
-        boost::bind(&Session::handle_read, this,
-                    shared_from_this(),
-                    boost::asio::placeholders::error,
-                    boost::asio::placeholders::bytes_transferred));
-  }
-
-  void handle_read(std::shared_ptr<Session>& /*s*/,
-                   const boost::system::error_code& err,
-                   size_t bytes_transferred)
-  {
-    if (!err) {
-      std::cout << "recv: " << std::endl;
-      socket.async_read_some(
-          boost::asio::buffer(data, max_length),
-          boost::bind(&Session::handle_read, this,
-                      shared_from_this(),
-                      boost::asio::placeholders::error,
-                      boost::asio::placeholders::bytes_transferred));
-      std::cout.write(data, bytes_transferred);
-      std::cout << std::endl;
-    } else {
-      std::cerr << "err (recv): " << err.message() << std::endl;
-    }
-  }
-
-private:
-  tcp::socket socket;
-  enum { max_length = 1024 };
-  char data[max_length];
-};
-
-class Server {
-public:
-  Server(boost::asio::io_service& ios,
-         short port) : ios(ios), acceptor(ios, tcp::endpoint(tcp::v4(), port))
-  {
-    std::shared_ptr<Session> session = std::make_shared<Session>(ios);
+void Server::handle_accept(std::shared_ptr<Session> session,
+                    const boost::system::error_code& err)
+{
+  if (!err) {
+    session->start();
+    session = std::make_shared<Session>(ios);
     acceptor.async_accept(session->get_socket(),
-                          boost::bind(&Server::handle_accept, this,
-                                      session,
+                          boost::bind(&Server::handle_accept, this, session,
                                       boost::asio::placeholders::error));
   }
-
-  void handle_accept(std::shared_ptr<Session> session,
-                     const boost::system::error_code& err)
-  {
-    if (!err) {
-      session->start();
-      session = std::make_shared<Session>(ios);
-      acceptor.async_accept(session->get_socket(),
-                            boost::bind(&Server::handle_accept, this, session,
-                                        boost::asio::placeholders::error));
-    }
-    else {
-      std::cerr << "err: " + err.message() << std::endl;
-      session.reset();
-    }
+  else {
+    std::cerr << "err: " + err.message() << std::endl;
+    session.reset();
   }
-private:
-  boost::asio::io_service& ios;
-  tcp::acceptor acceptor;
-};
-
-int main(int argc, char** argv)
-{
-  std::cout << argv[0]  << ' ' << argc << std::endl;
-
-  try {
-    boost::asio::io_service ios;
-    Server s(ios, 8080);
-    ios.run();
-  } catch(std::exception& e) {
-    std::cerr << e.what() << std::endl;
-  }
-  return 0;
 }
+
+} // otus::
