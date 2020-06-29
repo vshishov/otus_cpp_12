@@ -1,3 +1,5 @@
+#include "session.h"
+
 #include <iostream>
 #include <memory>
 #include <boost/asio.hpp>

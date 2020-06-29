@@ -24,11 +24,12 @@ set(TEST_PATH "test/")
 set(GTEST_SRCDIR "/usr/src/gtest/")
 
 add_executable(${EXEC_NAME} 
-  ${SRC_PATH}/main.cpp
+  ${SRC_PATH}/server.cpp
 )
 
 add_library(${LIB_NAME} 
   ${SRC_PATH}/bulk_server.cpp
+  ${SRC_PATH}/session.cpp
 )
 
 set_target_properties(${EXEC_NAME} ${LIB_NAME}  PROPERTIES
