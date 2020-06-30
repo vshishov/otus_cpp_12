@@ -1,9 +1,10 @@
 #pragma once
 
+#include "commander.h"
+
 #include <iostream>
 #include <memory>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
 
 namespace otus {
 
@@ -12,17 +13,21 @@ using boost::asio::ip::tcp;
 class Session : public std::enable_shared_from_this<Session>
 {
 public:
-  Session(boost::asio::io_service& ios);
+  Session(tcp::socket a_Socket, std::shared_ptr<Commander> a_pCommander);
   
-  tcp::socket& get_socket();
-  void start();
-  void handle_read(std::shared_ptr<Session>& s,
-                   const boost::system::error_code& err,
-                   size_t bytes_transferred);
+  void Start();
 
 private:
-  tcp::socket socket;
-  char data[1024];
+  void DoRead();
+  void Proccess();
+  void Flush();
+
+private:
+  tcp::socket m_Socket;
+  std::shared_ptr<Commander> m_pCommander;
+  char m_buffer[1];
+  std::stringstream m_ssInputStream;
+  std::string m_strId;
 };
 
 } // otus::

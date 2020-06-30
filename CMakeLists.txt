@@ -45,6 +45,7 @@ target_include_directories(${EXEC_NAME}
 
 target_link_libraries(${LIB_NAME}
   ${Boost_LIBRARIES}
+  ${CMAKE_THREAD_LIBS_INIT}
 )
 
 target_link_libraries(${EXEC_NAME} PRIVATE

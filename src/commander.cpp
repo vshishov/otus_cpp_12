@@ -24,33 +24,66 @@ std::shared_ptr<Commander> Commander::Create(const std::string& a_strName, std::
   return ptr;
 }
 
-void Commander::ProccessLine(const std::string& a_strLine)
+void Commander::ProcessLine(const std::string& a_strId, const std::string& a_strLine)
 {
   if (a_strLine.empty()) {
     return;
   }
+  
+  auto& curBlock = m_CommandBlocks["main"];
+  std::cout << a_strId  << std::endl;
+  auto curId_iter = m_CommandBlocks.find(a_strId);
+  if ( curId_iter != m_CommandBlocks.end() ) {
+    std::cout << "find command block" << std::endl;
+    curBlock = curId_iter->second;
+  }
 
   ++m_counters.lineCounter;
   if (a_strLine == "{") {
+    curBlock = m_CommandBlocks[a_strId];
     if (m_szBlockDepth == 0) {
-      Flush();
+      Flush();      
     }
     m_szBlockDepth++;
+    curBlock.first++;
   } 
   else if (a_strLine == "}") {
-    if (m_szBlockDepth == 0) {
-      m_CommandBlock.Clear();
+    if (curBlock.first > 0) {
+      curBlock.first--;
     }
-    m_szBlockDepth--;
+    else {      
+      curBlock.second.Clear();
+    }
   }
   else {
-    m_CommandBlock << a_strLine;
+    // m_CommandBlock << a_strLine;  
+    std::cout << "add: " << m_CommandBlocks.size() << std::endl;
+
+    curBlock.second << a_strLine;
+    std::cout << "after add: " << m_CommandBlocks.size() << std::endl;
   }
 
-  if (!m_szBlockDepth && m_CommandBlock.Size() >= m_szBlockSize) {
-    Flush();
+ std::cout << "size: " << curBlock.second.Size() << std::endl;
+ std::cout << "curNested: " << curBlock.first << std::endl;
+  if (!curBlock.first && curBlock.second.Size() >= m_szBlockSize) {
+    // Flush();
+    std::cout << "Flush()" << std::endl;
+
+    if (curBlock.second.Size() > 0) {
+      Notify(curBlock.second);    
+      m_counters.commandCounter += curBlock.second.Size();
+      ++m_counters.blockCounter;
+      curBlock.second.Clear();
+      // m_CommandBlocks.erase(curBlock);
+    }
   }
 }
+
+void Commander::Stop(const std::string& a_strId)
+{
+  std::cout << a_strId;
+}
+
 
 void Commander::Flush() 
 {

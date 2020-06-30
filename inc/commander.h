@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <string>
+#include <map>
 
 namespace otus {
 
@@ -15,7 +16,9 @@ public:
   static std::shared_ptr<Commander> Create(const std::string& a_strName, std::size_t a_szBlockSize, std::ostream& a_osMetricsOut = std::cout);
   ~Commander();
 
-  void ProccessLine(const std::string& a_strLine);
+  void ProcessLine(const std::string& a_strId, const std::string& a_strLine);
+
+  void Stop(const std::string& a_strId);
 
 private:
   Commander(const std::string& a_strName, std::size_t a_szBlockSize, std::ostream& a_osMetricsOut = std::cout);
@@ -28,6 +31,7 @@ private:
   std::size_t m_szBlockDepth;
   Counters m_counters;
   CommandBlock m_CommandBlock;  
+  std::map<std::string, std::pair<std::size_t, CommandBlock> > m_CommandBlocks;
 };
 
 } // otus::
