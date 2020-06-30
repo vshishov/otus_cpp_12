@@ -30,6 +30,9 @@ add_executable(${EXEC_NAME}
 add_library(${LIB_NAME} 
   ${SRC_PATH}/server.cpp
   ${SRC_PATH}/session.cpp
+  ${SRC_PATH}/commander.cpp
+  ${SRC_PATH}/executer.cpp
+  ${SRC_PATH}/logger.cpp
 )
 
 set_target_properties(${EXEC_NAME} ${LIB_NAME}  PROPERTIES
@@ -54,6 +57,7 @@ message(${GTEST_SRCDIR})
 
   add_executable(${TEST_NAME}
     ${GTEST_SRCDIR}/src/gtest_main.cc
+    ${TEST_PATH}/bulkmt_test.cpp
   )
 
   target_link_libraries(${TEST_NAME}
