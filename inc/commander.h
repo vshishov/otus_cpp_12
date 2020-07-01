@@ -9,6 +9,11 @@
 #include <map>
 #include <set>
 
+#include <thread>
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
+
 namespace otus {
 
 struct ClientCommand {
@@ -45,6 +50,9 @@ private:
   Counters m_counters;
   Context m_ClientContext;
   std::set<std::string> m_Clients;
+
+  std::mutex m_contextLock;
+  std::condition_variable m_contextCheck;
 };
 
 } // otus::
