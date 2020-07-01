@@ -24,7 +24,7 @@ set(TEST_PATH "test/")
 set(GTEST_SRCDIR "/usr/src/gtest/")
 
 add_executable(${EXEC_NAME} 
-  ${SRC_PATH}/main_server.cpp
+  ${SRC_PATH}/main.cpp
 )
 
 add_library(${LIB_NAME} 
