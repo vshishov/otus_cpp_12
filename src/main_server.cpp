@@ -48,7 +48,16 @@ int main(int argc, char** argv)
     int nBulkSize = GetIntFromArgv(argv[2]);
     boost::asio::io_service ioService;
     tcp::endpoint endpoint(tcp::v4(), nPort);
+    boost::asio::signal_set signals(ioService, SIGINT, SIGTERM);
     otus::Server server(ioService, endpoint, nBulkSize);
+    signals.async_wait([&ioService](const boost::system::error_code& error, int /*signal_number*/)
+      {
+        if (!error) {
+          ioService.stop();
+        }
+      }
+    );
+    
     ioService.run();
   }
   catch(const InvalidInteger& ex) {
