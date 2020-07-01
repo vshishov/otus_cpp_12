@@ -36,7 +36,7 @@ add_library(${LIB_NAME}
 )
 
 set_target_properties(${EXEC_NAME} ${LIB_NAME}  PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   CXX_STANDARD_REQUIRED ON
 )
 target_include_directories(${EXEC_NAME} 

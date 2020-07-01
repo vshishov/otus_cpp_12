@@ -20,14 +20,14 @@ public:
 private:
   void DoRead();
   void Proccess();
-  void Flush();
+  void Close();
 
 private:
   tcp::socket m_Socket;
   std::shared_ptr<Commander> m_pCommander;
   char m_buffer[1];
   std::stringstream m_ssInputStream;
-  std::string m_strId;
+  std::string m_strIdentifier;
 };
 
 } // otus::

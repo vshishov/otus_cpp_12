@@ -10,7 +10,7 @@ Commander::Commander(const std::string& a_strName, std::size_t a_szBlockSize, st
   , m_szBlockSize{a_szBlockSize}
   , m_szBlockDepth{0}
   , m_counters{a_strName}
-  , m_CommandBlock{a_szBlockSize}
+  // , m_CommandBlock{a_szBlockSize}
 { }
 
 Commander::~Commander()
@@ -29,70 +29,111 @@ void Commander::ProcessLine(const std::string& a_strId, const std::string& a_str
   if (a_strLine.empty()) {
     return;
   }
-  
-  auto& curBlock = m_CommandBlocks["main"];
-  std::cout << a_strId  << std::endl;
-  auto curId_iter = m_CommandBlocks.find(a_strId);
-  if ( curId_iter != m_CommandBlocks.end() ) {
-    std::cout << "find command block" << std::endl;
-    curBlock = curId_iter->second;
-  }
+
+  // std::cout << std::endl << "------------" << std::endl;
+  //auto& curBlock = m_ClientContext["main"];
+  // std::cout << a_strId  << std::endl;
+  auto curContext = GetCurrentContext(a_strId);
+  // std::cout << "CurrentBlock: " << curContext->first << std::endl;
+//   if ( curContext != m_ClientContext.end() ) {
+//     std::cout << "find command block" << std::endl;
+//     curBlock = curContext->second;
+//     std::cout << "cur size: " << curBlock.m_CommandBlock.Size() << std::endl;
+//  std::cout << "curNested: " << curBlock.m_szNestedLevel << std::endl;
+//  std::cout << "------------" << std::endl << std::endl;
+ 
+//   }
 
   ++m_counters.lineCounter;
   if (a_strLine == "{") {
-    curBlock = m_CommandBlocks[a_strId];
-    if (m_szBlockDepth == 0) {
-      Flush();      
-    }
-    m_szBlockDepth++;
-    curBlock.first++;
+    curContext = AddContext(a_strId);
+    curContext->second.m_szNestedLevel++;
   } 
   else if (a_strLine == "}") {
-    if (curBlock.first > 0) {
-      curBlock.first--;
+    if (curContext->second.m_szNestedLevel > 0) {
+      curContext->second.m_szNestedLevel--;
     }
     else {      
-      curBlock.second.Clear();
+      curContext->second.m_CommandBlock.Clear();
     }
   }
   else {
     // m_CommandBlock << a_strLine;  
-    std::cout << "add: " << m_CommandBlocks.size() << std::endl;
+    // std::cout << "add command: " << m_ClientContext.size() << std::endl;
 
-    curBlock.second << a_strLine;
-    std::cout << "after add: " << m_CommandBlocks.size() << std::endl;
+    curContext->second.m_CommandBlock << a_strLine;
+    // std::cout << "after add: " << m_ClientContext.size() << std::endl;
   }
 
- std::cout << "size: " << curBlock.second.Size() << std::endl;
- std::cout << "curNested: " << curBlock.first << std::endl;
-  if (!curBlock.first && curBlock.second.Size() >= m_szBlockSize) {
-    // Flush();
-    std::cout << "Flush()" << std::endl;
+  // std::cout << "size: " << m_ClientContext.size() << std::endl;
+  // std::cout << "cur size: " << curContext->second.m_CommandBlock.Size() << std::endl;
+  // std::cout << "curNested: " << curContext->second.m_szNestedLevel << std::endl;
+  // if (!curContext->second.m_szNestedLevel && curContext->second.m_CommandBlock.Size() >= m_szBlockSize) {
+    // std::cout << "Flush()" << std::endl;
+    // Flush(curContext);
+    // RemoveContext(a_strId);
+  // }
+  Flush();
+}
 
-    if (curBlock.second.Size() > 0) {
-      Notify(curBlock.second);    
-      m_counters.commandCounter += curBlock.second.Size();
-      ++m_counters.blockCounter;
-      curBlock.second.Clear();
-      // m_CommandBlocks.erase(curBlock);
+void Commander::Register(const std::string& a_strClientId)
+{
+  m_Clients.emplace(a_strClientId);
+}
+
+void Commander::Unregister(const std::string& a_strClientId)
+{
+  m_Clients.erase(a_strClientId);
+  if (m_Clients.size() == 0) {
+    Flush(true);
+  }
+}
+
+void Commander::Flush(bool a_bForce) 
+{
+  auto context_iter = m_ClientContext.begin();
+  while ( context_iter != m_ClientContext.end() ) {
+  // for ( auto& context_iter : m_ClientContext ) {
+    auto& context = context_iter->second; 
+    if (!context.m_szNestedLevel && (a_bForce || context.m_CommandBlock.Size() >= m_szBlockSize) ) {
+      if (context.m_CommandBlock.Size() > 0) {
+        Notify(context.m_CommandBlock);    
+        m_counters.commandCounter += context.m_CommandBlock.Size();
+        ++m_counters.blockCounter;
+        context.m_CommandBlock.Clear();        
+      }
+      context_iter = m_ClientContext.erase(context_iter);
+    }
+    else {
+      ++context_iter;
     }
   }
 }
 
-void Commander::Stop(const std::string& a_strId)
+Context_iter Commander::GetCurrentContext(const std::string& a_strId)
 {
-  std::cout << a_strId;
+  Context_iter iter = m_ClientContext.find(a_strId);
+  if (iter == m_ClientContext.end()) {
+    iter = AddContext("main");
+  }
+  return iter;
 }
 
-
-void Commander::Flush() 
+Context_iter Commander::AddContext(const std::string& a_strId)
 {
-  if (m_CommandBlock.Size() > 0) {
-    Notify(m_CommandBlock);    
-    m_counters.commandCounter += m_CommandBlock.Size();
-    ++m_counters.blockCounter;
-    m_CommandBlock.Clear();
+  Context_iter iter = m_ClientContext.find(a_strId);
+  if (iter == m_ClientContext.end()) {
+    auto [inserted_iter, inserted] = m_ClientContext.try_emplace(a_strId);
+    if (inserted) {
+      iter = inserted_iter;
+    }
   }
+  return iter;
+}
+
+void Commander::RemoveContext(const std::string& a_strId)
+{
+  m_ClientContext.erase(a_strId);
 }
 
 } // otus::
