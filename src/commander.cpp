@@ -14,6 +14,7 @@ Commander::Commander(const std::string& a_strName, std::size_t a_szBlockSize, st
 
 Commander::~Commander()
 {
+  m_contextCheck.notify_all();
   m_osMetricsOut << m_counters << std::endl; 
 }
 
@@ -50,7 +51,7 @@ void Commander::ProcessLine(const std::string& a_strId, const std::string& a_str
       curContext->second.m_CommandBlock << a_strLine;
     }
   }
-  m_contextCheck.notify_all();
+
   Flush();
 }
 
@@ -69,25 +70,22 @@ void Commander::Unregister(const std::string& a_strClientId)
 
 void Commander::Flush(bool a_bForce) 
 {
-  {
-    std::unique_lock<std::mutex> locker(m_contextLock);
-    m_contextCheck.wait(locker, [&](){ return !m_ClientContext.empty(); });
+  std::unique_lock<std::mutex> locker(m_contextLock);
 
-    auto context_iter = m_ClientContext.begin();
-    while ( context_iter != m_ClientContext.end() ) {
-      auto& context = context_iter->second; 
-      if (!context.m_szNestedLevel && (a_bForce || context.m_CommandBlock.Size() >= m_szBlockSize) ) {
-        if (context.m_CommandBlock.Size() > 0) {
-          Notify(context.m_CommandBlock);    
-          m_counters.commandCounter += context.m_CommandBlock.Size();
-          ++m_counters.blockCounter;
-          context.m_CommandBlock.Clear();        
-        }
-        context_iter = m_ClientContext.erase(context_iter);
+  auto context_iter = m_ClientContext.begin();
+  while ( context_iter != m_ClientContext.end() ) {
+    auto& context = context_iter->second; 
+    if (!context.m_szNestedLevel && (a_bForce || context.m_CommandBlock.Size() >= m_szBlockSize) ) {
+      if (context.m_CommandBlock.Size() > 0) {
+        Notify(context.m_CommandBlock);    
+        m_counters.commandCounter += context.m_CommandBlock.Size();
+        ++m_counters.blockCounter;
+        context.m_CommandBlock.Clear();        
       }
-      else {
-        ++context_iter;
-      }
+      context_iter = m_ClientContext.erase(context_iter);
+    }
+    else {
+      ++context_iter;
     }
   }
 }
