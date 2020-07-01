@@ -93,7 +93,6 @@ void Commander::Flush(bool a_bForce)
 {
   auto context_iter = m_ClientContext.begin();
   while ( context_iter != m_ClientContext.end() ) {
-  // for ( auto& context_iter : m_ClientContext ) {
     auto& context = context_iter->second; 
     if (!context.m_szNestedLevel && (a_bForce || context.m_CommandBlock.Size() >= m_szBlockSize) ) {
       if (context.m_CommandBlock.Size() > 0) {
@@ -129,11 +128,6 @@ Context_iter Commander::AddContext(const std::string& a_strId)
     }
   }
   return iter;
-}
-
-void Commander::RemoveContext(const std::string& a_strId)
-{
-  m_ClientContext.erase(a_strId);
 }
 
 } // otus::

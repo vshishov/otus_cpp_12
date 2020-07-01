@@ -37,7 +37,6 @@ private:
 
   Context_iter GetCurrentContext(const std::string& a_strId);
   Context_iter AddContext(const std::string& a_strId);
-  void RemoveContext(const std::string& a_strId);
 
 private:
   std::ostream& m_osMetricsOut;
