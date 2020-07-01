@@ -30,19 +30,7 @@ void Commander::ProcessLine(const std::string& a_strId, const std::string& a_str
     return;
   }
 
-  // std::cout << std::endl << "------------" << std::endl;
-  //auto& curBlock = m_ClientContext["main"];
-  // std::cout << a_strId  << std::endl;
   auto curContext = GetCurrentContext(a_strId);
-  // std::cout << "CurrentBlock: " << curContext->first << std::endl;
-//   if ( curContext != m_ClientContext.end() ) {
-//     std::cout << "find command block" << std::endl;
-//     curBlock = curContext->second;
-//     std::cout << "cur size: " << curBlock.m_CommandBlock.Size() << std::endl;
-//  std::cout << "curNested: " << curBlock.m_szNestedLevel << std::endl;
-//  std::cout << "------------" << std::endl << std::endl;
- 
-//   }
 
   ++m_counters.lineCounter;
   if (a_strLine == "{") {
@@ -58,21 +46,8 @@ void Commander::ProcessLine(const std::string& a_strId, const std::string& a_str
     }
   }
   else {
-    // m_CommandBlock << a_strLine;  
-    // std::cout << "add command: " << m_ClientContext.size() << std::endl;
-
     curContext->second.m_CommandBlock << a_strLine;
-    // std::cout << "after add: " << m_ClientContext.size() << std::endl;
   }
-
-  // std::cout << "size: " << m_ClientContext.size() << std::endl;
-  // std::cout << "cur size: " << curContext->second.m_CommandBlock.Size() << std::endl;
-  // std::cout << "curNested: " << curContext->second.m_szNestedLevel << std::endl;
-  // if (!curContext->second.m_szNestedLevel && curContext->second.m_CommandBlock.Size() >= m_szBlockSize) {
-    // std::cout << "Flush()" << std::endl;
-    // Flush(curContext);
-    // RemoveContext(a_strId);
-  // }
   Flush();
 }
 
