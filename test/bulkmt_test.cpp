@@ -39,7 +39,7 @@ protected:
 class Bulkmt_2_Clinets_Test : public ::testing::Test
 {
 protected:
-  void Run(std::size_t a_nBlockSize, std::size_t a_szDelay = 1)
+  void Run(std::size_t a_nBlockSize, std::size_t a_szDelay = 2)
   {      
     auto pCommander = otus::Commander::Create("main", a_nBlockSize, ssMetricsMain);
     auto pExecuter = otus::Executer::Create("log", pCommander, ssTestOut, ssMetricsLog);
@@ -112,7 +112,7 @@ TEST_F(Bulkmt_Test, single_block) {
     << "}" << std::endl
   ;
 
-  Run(3, 2);
+  Run(3, 3);
   
   ASSERT_EQ(ssTestOut.str(), "bulk: cmd1, cmd2, cmd3, cmd4, cmd5\n");
   ASSERT_EQ(ssMetricsMain.str(), "main: 7 line(s), 1 block(s), 5 command(s)\n");
@@ -132,7 +132,7 @@ TEST_F(Bulkmt_Test, single_block_in_default_block) {
     << "cmd8" << std::endl
   ;
 
-  Run(3, 2);
+  Run(3, 3);
 
   ASSERT_EQ(ssTestOut.str(), "bulk: cmd3, cmd4, cmd5, cmd6, cmd7\nbulk: cmd1, cmd2, cmd8\n");
   ASSERT_EQ(ssMetricsMain.str(), "main: 10 line(s), 2 block(s), 8 command(s)\n");
@@ -217,7 +217,7 @@ TEST_F(Bulkmt_2_Clinets_Test, single_block) {
     << "}" << std::endl
   ;
 
-  Run(3, 3);
+  Run(3, 4);
   
   ASSERT_EQ(ssTestOut.str(), "bulk: cmd1, cmd2, cmd3, cmd4, cmd5\nbulk: cmd1, cmd2, cmd3, cmd4, cmd5\n");
   ASSERT_EQ(ssMetricsMain.str(), "main: 14 line(s), 2 block(s), 10 command(s)\n");
@@ -243,7 +243,7 @@ TEST_F(Bulkmt_2_Clinets_Test, multi_block) {
     << "}" << std::endl
   ;
 
-  Run(3, 4);
+  Run(3, 5);
 
   ASSERT_EQ(ssTestOut.str(), "bulk: cmd1, cmd1, cmd2\n"
     "bulk: cmd1.1, cmd1.2, cmd1.3, "
