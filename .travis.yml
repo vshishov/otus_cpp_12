@@ -5,10 +5,7 @@ addons:
   apt:
     update: false
     packages:
-    - libboost-program-options-dev
-    - libboost-filesystem-dev
-    - libboost-regex-dev
-    - libgtest-dev
+    - libboost-system-dev
     - doxygen
     - graphviz
 
